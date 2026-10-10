@@ -1,0 +1,59 @@
+name: Test 8 - Combined critical condition and recovery - PARTIALLY MANUAL
+version: 1
+author: Blood Bank Cold Storage Monitoring System
+#
+# The temperature legs below are fully automatable (DS18B20 documents a
+# "temperature" automation control). The door leg is NOT automatable: the
+# wokwi-slide-switch part has no documented Automation Scenario control
+# (see the note in door_alert.yaml / README.md section 9). So this scenario
+# automates everything except the door toggle, and calls out the manual step
+# where the combined-fault and door-recovery checks need it.
+steps:
+  - wait-serial: "SYSTEM READY"
+  - wait-serial: "FEFO: BG002"
+
+  # Baseline
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 5
+  - delay: 2s
+  - wait-serial: "TEMP STATUS: NORMAL"
+  - wait-serial: "SYSTEM STATUS: NORMAL"
+
+  # High temperature (automatable)
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 8
+  - wait-serial: "CRITICAL HIGH TEMP"
+  - wait-serial: "SYSTEM STATUS: CRITICAL"
+
+  # ---- Manual step ----
+  # With temperature still at 8 C (still critical), click the slide switch
+  # (sw1) to OPEN and leave it open for >= 5 continuous seconds.
+  # Expect: "CRITICAL DOOR OPEN" on Serial, and the LCD rotating through all
+  # four critical pages (HIGH TEMP cause, then DOOR OPEN cause).
+  # Then click the switch back to CLOSED before continuing this scenario.
+
+  # Restore temperature; door is expected closed again after the manual step
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 5
+  - wait-serial: "TEMP STATUS: NORMAL"
+  - wait-serial: "DOOR STATUS: CLOSED"
+  - wait-serial: "SYSTEM STATUS: NORMAL"
+
+  # Low temperature leg (automatable)
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 1
+  - wait-serial: "CRITICAL LOW TEMP"
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 5
+  - wait-serial: "TEMP STATUS: NORMAL"
+  - wait-serial: "SYSTEM STATUS: NORMAL"

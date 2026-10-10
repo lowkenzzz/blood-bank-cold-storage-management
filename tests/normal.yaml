@@ -1,0 +1,15 @@
+name: Test 1 - Normal operation
+version: 1
+author: Blood Bank Cold Storage Monitoring System
+steps:
+  - wait-serial: "SYSTEM READY"
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 5
+  - delay: 2s
+  - wait-serial: "TEMP STATUS: NORMAL"
+  - wait-serial: "DOOR STATUS: CLOSED"
+  - wait-serial: "SYSTEM STATUS: NORMAL"
+# Expected on screen: green LED ON, red LED OFF, buzzer silent,
+# LCD page 1 shows "TEMP:   5.0 C" / "STATUS:NORMAL".

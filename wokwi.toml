@@ -1,0 +1,12 @@
+# Wokwi configuration for the Blood Bank Cold Storage Monitoring System.
+# Used by the Wokwi VS Code extension / wokwi-cli after a PlatformIO build.
+
+[wokwi]
+version = 1
+firmware = ".pio/build/esp32dev/firmware.bin"
+elf = ".pio/build/esp32dev/firmware.elf"
+
+# Forward host http://localhost:8180 to the ESP32 web server on port 80.
+[[net.forward]]
+from = "localhost:8180"
+to = "target:80"

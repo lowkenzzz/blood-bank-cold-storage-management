@@ -1,0 +1,49 @@
+name: Tests 5-7 - RFID identification and FEFO
+version: 1
+author: Blood Bank Cold Storage Monitoring System
+steps:
+  - wait-serial: "SYSTEM READY"
+  - wait-serial: "FEFO: BG002"
+
+  # Test 5: card preset 0 (Blue Card) = UID 01:02:03:04 = BG001
+  - set-control:
+      part-id: rfid1
+      control: card
+      value: 0
+  - set-control:
+      part-id: rfid1
+      control: tagPresent
+      value: 1
+  - wait-serial: "RFID UID: 01:02:03:04"
+  - wait-serial: "RFID UNIT: BG001 O+ 20 Aug A1"
+  - set-control:
+      part-id: rfid1
+      control: tagPresent
+      value: 0
+  - delay: 500ms
+
+  # Test 6: card preset 1 (Green Card) = UID 11:22:33:44 = BG002
+  - set-control:
+      part-id: rfid1
+      control: card
+      value: 1
+  - set-control:
+      part-id: rfid1
+      control: tagPresent
+      value: 1
+  - wait-serial: "RFID UID: 11:22:33:44"
+  - wait-serial: "RFID UNIT: BG002 A+ 16 Aug A2"
+  - set-control:
+      part-id: rfid1
+      control: tagPresent
+      value: 0
+
+# Card preset table (board-mfrc522), confirmed against Wokwi's part documentation:
+#   0 = Blue Card   = 01:02:03:04 = BG001
+#   1 = Green Card  = 11:22:33:44 = BG002
+#   2 = Yellow Card = 55:66:77:88 = BG003
+#   3 = Red Card    = AA:BB:CC:DD = BG004
+#
+# Test 7 (FEFO) needs no card tap: FEFO is computed once at boot from the
+# fixed inventory and printed as "FEFO: BG002" in SYSTEM READY's startup
+# block, checked above.

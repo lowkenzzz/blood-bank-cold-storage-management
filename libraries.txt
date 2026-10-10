@@ -1,0 +1,13 @@
+# Libraries for the Wokwi web editor (wokwi.com -> Library Manager).
+# WiFi, WebServer, Wire and SPI are built into the ESP32 Arduino core
+# and do not need to be listed here.
+#
+# The Wokwi web editor's Library Manager searches by name and does not
+# expose version pinning. To pin MFRC522 to 1.4.12 as in platformio.ini,
+# use the VS Code + PlatformIO workflow instead (see README.md section 9).
+
+LiquidCrystal I2C
+DHT sensor library for ESPx
+MFRC522
+OneWire
+DallasTemperature

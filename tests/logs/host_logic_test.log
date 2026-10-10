@@ -1,0 +1,132 @@
+== Unit checks: temperature classification ==
+  [PASS] 2.0 C is NORMAL (inclusive lower bound)
+  [PASS] 5.0 C is NORMAL
+  [PASS] 6.0 C is NORMAL (inclusive upper bound)
+  [PASS] 1.0 C is LOW
+  [PASS] 1.9 C is LOW
+  [PASS] 6.1 C is HIGH
+  [PASS] 8.0 C is HIGH
+== Unit checks: RFID UID handling ==
+  [PASS] formatUid(01 02 03 04) (got "01:02:03:04", want "01:02:03:04")
+  [PASS] formatUid(AA BB CC DD) (got "AA:BB:CC:DD", want "AA:BB:CC:DD")
+  [PASS] normalizeUid lowercase input (got "AA:BB:CC:DD", want "AA:BB:CC:DD")
+  [PASS] 01:02:03:04 -> BG001
+  [PASS] 11:22:33:44 -> BG002
+  [PASS] 55:66:77:88 -> BG003
+  [PASS] AA:BB:CC:DD -> BG004
+  [PASS] unknown card -> -1
+== Unit checks: FEFO ==
+  [PASS] FEFO unit code (got "BG002", want "BG002")
+  [PASS] FEFO blood group (got "A+", want "A+")
+  [PASS] FEFO expiry (got "16 Aug", want "16 Aug")
+  [PASS] FEFO location (got "A2", want "A2")
+  [PASS] FEFO is deterministic across calls
+== TEST 1: Normal, T = 5 C, door closed ==
+      LCD page 1: |TEMP:   5.0 C   | |STATUS:NORMAL   |
+      LCD page 2: |HUM:  45 %      | |DOOR: CLOSED    |
+      LCD page 3: |RFID: ---       | |FEFO: BG002     |
+  [PASS] system not critical
+  [PASS] green LED ON
+  [PASS] red LED OFF
+  [PASS] buzzer OFF
+  [PASS] serial temp event (got "TEMP STATUS: NORMAL", want "TEMP STATUS: NORMAL")
+  [PASS] serial door event (got "DOOR STATUS: CLOSED", want "DOOR STATUS: CLOSED")
+  [PASS] serial system event (got "SYSTEM STATUS: NORMAL", want "SYSTEM STATUS: NORMAL")
+  [PASS] LCD shows the temperature value
+  [PASS] LCD shows NORMAL
+  [PASS] all LCD lines fit 16 chars
+== TEST 2: High temperature, T = 8 C ==
+      LCD page 1: |TEMP:   8.0 C   | |CRITICAL:       |
+      LCD page 2: |CRITICAL:       | |HIGH TEMP       |
+  [PASS] temperature classified HIGH
+  [PASS] system critical
+  [PASS] red LED ON
+  [PASS] green LED OFF
+  [PASS] buzzer ON
+  [PASS] serial event (got "CRITICAL HIGH TEMP", want "CRITICAL HIGH TEMP")
+  [PASS] LCD names HIGH TEMP as the cause
+  [PASS] LCD still shows the temperature
+  [PASS] LCD does not fall back to a bare page
+  [PASS] all LCD lines fit 16 chars
+== TEST 3: Low temperature, T = 1 C ==
+      LCD page 1: |TEMP:   1.0 C   | |CRITICAL:       |
+      LCD page 2: |CRITICAL:       | |LOW TEMP        |
+  [PASS] temperature classified LOW
+  [PASS] red LED ON
+  [PASS] buzzer ON
+  [PASS] serial event (got "CRITICAL LOW TEMP", want "CRITICAL LOW TEMP")
+  [PASS] LCD names LOW TEMP as the cause
+  [PASS] LCD does not show HIGH TEMP
+  [PASS] all LCD lines fit 16 chars
+== TEST 4: Door open >= 5 s, temperature normal ==
+  [PASS] no alert while closed
+  [PASS] door reported OPEN immediately
+  [PASS] no alert yet at 0 s
+  [PASS] serial event at 0 s (got "DOOR OPEN", want "DOOR OPEN")
+  [PASS] no alert at 4.999 s
+  [PASS] not critical at 4.999 s
+  [PASS] alert raised at exactly 5.000 s
+  [PASS] system critical
+  [PASS] red LED ON
+  [PASS] green LED OFF
+  [PASS] buzzer ON
+  [PASS] serial event (got "CRITICAL DOOR OPEN", want "CRITICAL DOOR OPEN")
+      LCD page 1: |DOOR: OPEN      | |CRITICAL:       |
+      LCD page 2: |CRITICAL:       | |DOOR OPEN       |
+  [PASS] LCD names DOOR OPEN as the cause
+  [PASS] all LCD lines fit 16 chars
+  [PASS] alert cleared when door closes
+  [PASS] system back to normal
+  [PASS] green LED ON again
+  [PASS] buzzer OFF again
+== TEST 4b: Door flicker must restart the timer ==
+  [PASS] no alert 4 s after reopening
+  [PASS] alert 5 s after reopening
+== TEST 5: RFID card 01:02:03:04 ==
+  [PASS] card recognised
+  [PASS] unit (got "BG001", want "BG001")
+  [PASS] group (got "O+", want "O+")
+  [PASS] expiry (got "20 Aug", want "20 Aug")
+  [PASS] location (got "A1", want "A1")
+      LCD page 1: |TEMP:   5.0 C   | |STATUS:NORMAL   |
+      LCD page 2: |HUM:  45 %      | |DOOR: CLOSED    |
+      LCD page 3: |RFID: BG001 O+  | |FEFO: BG002     |
+  [PASS] LCD inventory page shows BG001
+  [PASS] all LCD lines fit 16 chars
+== TEST 6: RFID card 11:22:33:44 ==
+  [PASS] unit (got "BG002", want "BG002")
+  [PASS] group (got "A+", want "A+")
+  [PASS] expiry (got "16 Aug", want "16 Aug")
+  [PASS] location (got "A2", want "A2")
+== TEST 7: FEFO result for the demo inventory ==
+      FEFO -> BG002 A+ 16 Aug A2
+  [PASS] FEFO selects BG002 / A+ / 16 Aug
+== TEST 8: Combined critical, then recovery ==
+  [PASS] temperature critical immediately
+  [PASS] door alert not yet raised
+  [PASS] temperature critical
+  [PASS] door critical
+  [PASS] system critical
+  [PASS] red LED ON
+  [PASS] buzzer ON
+      LCD page 1: |TEMP:   8.0 C   | |CRITICAL:       |
+      LCD page 2: |CRITICAL:       | |HIGH TEMP       |
+      LCD page 3: |DOOR: OPEN      | |CRITICAL:       |
+      LCD page 4: |CRITICAL:       | |DOOR OPEN       |
+  [PASS] LCD rotation names HIGH TEMP
+  [PASS] LCD rotation names DOOR OPEN
+  [PASS] both causes fit in the page budget
+  [PASS] all LCD lines fit 16 chars
+  [PASS] recovered: not critical
+  [PASS] recovered: green LED ON
+  [PASS] recovered: red LED OFF
+  [PASS] recovered: buzzer OFF
+      LCD page 1: |TEMP:   5.0 C   | |STATUS:NORMAL   |
+      LCD page 2: |HUM:  45 %      | |DOOR: CLOSED    |
+      LCD page 3: |RFID: ---       | |FEFO: BG002     |
+  [PASS] LCD back to normal pages
+  [PASS] no CRITICAL text left
+
+================ RESULT ================
+checks run: 96   failures: 0
+ALL HOST LOGIC CHECKS PASSED

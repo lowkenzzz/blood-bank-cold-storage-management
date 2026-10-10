@@ -1,0 +1,19 @@
+name: Test 2 - Critical high temperature
+version: 1
+author: Blood Bank Cold Storage Monitoring System
+steps:
+  - wait-serial: "SYSTEM READY"
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 5
+  - delay: 2s
+  - wait-serial: "TEMP STATUS: NORMAL"
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 8
+  - wait-serial: "CRITICAL HIGH TEMP"
+  - wait-serial: "SYSTEM STATUS: CRITICAL"
+# Expected on screen: red LED ON, green LED OFF, buzzer active,
+# LCD rotates "TEMP:   8.0 C" / "CRITICAL:" and "CRITICAL:" / "HIGH TEMP".

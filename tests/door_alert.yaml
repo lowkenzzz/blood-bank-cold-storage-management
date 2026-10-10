@@ -1,0 +1,36 @@
+name: Test 4 - Door open alert (5 second rule) - MANUAL
+version: 1
+author: Blood Bank Cold Storage Monitoring System
+#
+# MANUAL TEST. The wokwi-slide-switch part (used as the reed-switch
+# substitute) has no documented Automation Scenario control - see
+# https://docs.wokwi.com/parts/wokwi-slide-switch, which lists only the
+# design-time "value" and "bounce" attributes, and Wokwi's own list of
+# "Supported Parts with Automation Controls"
+# (https://docs.wokwi.com/wokwi-ci/automation-scenarios#supported-parts-with-automation-controls),
+# which does not include the slide switch. There is no documented
+# `set-control` that can flip it from a script, so this scenario only
+# automates the parts that reach SYSTEM READY / NORMAL, then documents the
+# manual steps for the door part of Test 4.
+steps:
+  - wait-serial: "SYSTEM READY"
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 5
+  - delay: 2s
+  - wait-serial: "TEMP STATUS: NORMAL"
+  - wait-serial: "DOOR STATUS: CLOSED"
+  - wait-serial: "SYSTEM STATUS: NORMAL"
+
+# ---- Manual steps from here (Wokwi web editor or VS Code, simulation running) ----
+# 1. Click the slide switch (sw1) to move its handle to the OPEN position
+#    (see README.md section 3 for which physical position is OPEN vs CLOSED).
+# 2. Expect immediately: "DOOR OPEN" on Serial, LCD still showing normal pages.
+# 3. Wait >= 5 continuous seconds without touching the switch.
+# 4. Expect: "CRITICAL DOOR OPEN" and "SYSTEM STATUS: CRITICAL" on Serial;
+#    red LED ON, green LED OFF, buzzer ON; LCD switches to the DOOR OPEN
+#    critical pages.
+# 5. Click the switch back to CLOSED.
+# 6. Expect: "DOOR STATUS: CLOSED" and "SYSTEM STATUS: NORMAL"; LEDs and
+#    buzzer return to normal; LCD returns to the normal page rotation.

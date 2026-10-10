@@ -1,0 +1,19 @@
+name: Test 3 - Critical low temperature
+version: 1
+author: Blood Bank Cold Storage Monitoring System
+steps:
+  - wait-serial: "SYSTEM READY"
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 5
+  - delay: 2s
+  - wait-serial: "TEMP STATUS: NORMAL"
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 1
+  - wait-serial: "CRITICAL LOW TEMP"
+  - wait-serial: "SYSTEM STATUS: CRITICAL"
+# Expected on screen: red LED ON, buzzer active,
+# LCD rotates "TEMP:   1.0 C" / "CRITICAL:" and "CRITICAL:" / "LOW TEMP".

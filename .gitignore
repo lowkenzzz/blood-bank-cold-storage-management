@@ -1,0 +1,23 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+
+# Python environment and cache
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Generated build files
+dist/
+build/
+coverage/
+
+# Operating system files
+.DS_Store
+Thumbs.db
